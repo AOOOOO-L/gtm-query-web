@@ -2,7 +2,6 @@ const EXCEL_URL = "GTM 资料.xlsx";
 let excelData = [];
 const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
 
-// 初始化
 document.addEventListener('DOMContentLoaded', function(){
     document.getElementById("refreshBtn").onclick = refreshData;
     document.getElementById("categorySelect").onchange = function(){
@@ -27,7 +26,7 @@ async function refreshData(){
         loadGtmTypes();
         filterData();
     }catch(e){
-        resetTable("加载失败");
+        resetTable("加载失败：" + e);
     }
 }
 
@@ -109,7 +108,7 @@ function renderTable(list){
             <td>${row["创建者"]}</td>
             <td>${row["数据状态"]}</td>
             <td>
-                <button class="btn btn-sm btn-info" onclick="showDetail(${JSON.stringify(row).replace(/"/g,'&quot;')})">详情</button>
+                <button class="btn btn-sm btn-info" onclick='showDetail(${JSON.stringify(row).replace(/'/g, "\\'").replace(/"/g, "'")})'>详情</button>
                 <button class="btn btn-sm btn-success" onclick="copyNumber('${row["编号"]}')">复制编号</button>
             </td>
         `;
