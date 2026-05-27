@@ -1,4 +1,4 @@
-const EXCEL_URL = "https://updatecmvrf.ks3-cn-beijing.ksyuncs.com/GTM%E8%B5%84%E6%96%99%E5%B7%A5%E5%85%B7/GTM%20%E8%B5%84%E6%96%99.xlsx";
+const EXCEL_URL = "https://api.allorigins.win/raw?url=https://updatecmvrf.ks3-cn-beijing.ksyuncs.com/GTM%E8%B5%84%E6%96%99%E5%B7%A5%E5%85%B7/GTM%20%E8%B5%84%E6%96%99.xlsx";
 
 let excelData = [];
 const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
