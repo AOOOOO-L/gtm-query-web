@@ -90,6 +90,7 @@ function filterData(){
     renderTable(list);
 }
 
+// 严格8列，和表头一一对应
 function renderTable(list){
     let tb = document.querySelector("#dataTable tbody");
     tb.innerHTML = "";
