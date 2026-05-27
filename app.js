@@ -4,7 +4,6 @@ const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function(){
-    // 绑定事件
     document.getElementById("refreshBtn").onclick = refreshData;
     document.getElementById("categorySelect").onchange = function(){
         loadSeries();
@@ -12,8 +11,6 @@ document.addEventListener('DOMContentLoaded', function(){
     };
     document.getElementById("seriesSelect").onchange = filterData;
     document.getElementById("gtmSelect").onchange = filterData;
-
-    // 首次加载
     refreshData();
 });
 
@@ -94,22 +91,21 @@ function filterData(){
     renderTable(list);
 }
 
-// 接收当前筛选后的列表，保证详情一一对应
 function renderTable(list){
     let tb = document.querySelector("#dataTable tbody");
     tb.innerHTML = "";
     if(list.length===0){
-        tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无匹配数据</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无匹配数据</td></tr>';
         return;
     }
     list.forEach((row, idx)=>{
         let tr = document.createElement("tr");
-        // 把当前行数据传给详情弹窗，不再用全局索引
         tr.innerHTML = `
             <td>${row["GTM资料"]}</td>
             <td>${row["是否上传"]}</td>
             <td>${row["名称"]}</td>
             <td>${row["编号"]}</td>
+            <td>${row["当前版本"]}</td>
             <td>${row["创建者"]}</td>
             <td>${row["数据状态"]}</td>
             <td>
@@ -121,7 +117,6 @@ function renderTable(list){
     });
 }
 
-// 直接使用当前行数据，彻底解决错位
 function showDetail(rowData){
     let html = `
     <h6>${rowData["系列名称"]} 详情</h6><hr>
@@ -129,6 +124,7 @@ function showDetail(rowData){
     <p>GTM资料：${rowData["GTM资料"]}</p>
     <p>编号：${rowData["编号"]}</p>
     <p>名称：${rowData["名称"]}</p>
+    <p>当前版本：${rowData["当前版本"]}</p>
     <p>创建者：${rowData["创建者"]}</p>
     <p>路径：${rowData["路径"]}</p>
     `;
@@ -136,7 +132,6 @@ function showDetail(rowData){
     detailModal.show();
 }
 
-// 保留复制编号功能
 function copyNumber(num){
     if(num === "未填写"){
         alert("无编号");
@@ -158,5 +153,5 @@ function setLoadingState(){
 
 function resetTable(txt){
     let tb = document.querySelector("#dataTable tbody");
-    tb.innerHTML = `<tr><td colspan="7" class="text-center text-muted">${txt}</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="8" class="text-center text-muted">${txt}</td></tr>`;
 }
