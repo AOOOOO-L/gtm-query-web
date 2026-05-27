@@ -1,5 +1,7 @@
 const EXCEL_URL = "GTM 资料.xlsx";
 let excelData = [];
+// 新增：保存当前筛选后的列表，用于详情取值
+let currentFilterList = [];
 const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -87,6 +89,8 @@ function filterData(){
     if(gtm !== "all"){
         list = list.filter(x=>x["GTM资料"] === gtm);
     }
+    // 缓存当前筛选结果
+    currentFilterList = list;
     renderTable(list);
 }
 
@@ -97,10 +101,9 @@ function renderTable(list){
         tb.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无匹配数据</td></tr>';
         return;
     }
-    list.forEach(row => {
+    // 改用索引传参，彻底避开字符串转义问题
+    list.forEach((row, index) => {
         let tr = document.createElement("tr");
-        // 修复引号问题，详情按钮正常点击
-        let rowStr = JSON.stringify(row);
         tr.innerHTML = `
             <td>${row["GTM资料"]}</td>
             <td>${row["是否上传"]}</td>
@@ -110,7 +113,7 @@ function renderTable(list){
             <td>${row["创建者"]}</td>
             <td>${row["数据状态"]}</td>
             <td>
-                <button class="btn btn-sm btn-info" onclick="showDetail(${rowStr})">详情</button>
+                <button class="btn btn-sm btn-info" onclick="showDetail(${index})">详情</button>
                 <button class="btn btn-sm btn-success" onclick="copyNumber('${row["编号"]}')">复制编号</button>
             </td>
         `;
@@ -118,7 +121,9 @@ function renderTable(list){
     });
 }
 
-function showDetail(rowData){
+// 通过索引读取缓存的列表数据，100%正常触发
+function showDetail(index){
+    let rowData = currentFilterList[index];
     let html = `
     <h6>${rowData["系列名称"]} 详情</h6><hr>
     <p>产品大类：${rowData["产品大类"]}</p>
