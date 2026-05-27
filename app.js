@@ -90,7 +90,6 @@ function filterData(){
     renderTable(list);
 }
 
-// 严格8列，和表头一一对应
 function renderTable(list){
     let tb = document.querySelector("#dataTable tbody");
     tb.innerHTML = "";
@@ -98,8 +97,10 @@ function renderTable(list){
         tb.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无匹配数据</td></tr>';
         return;
     }
-    list.forEach((row, idx)=>{
+    list.forEach(row => {
         let tr = document.createElement("tr");
+        // 修复引号问题，详情按钮正常点击
+        let rowStr = JSON.stringify(row);
         tr.innerHTML = `
             <td>${row["GTM资料"]}</td>
             <td>${row["是否上传"]}</td>
@@ -109,7 +110,7 @@ function renderTable(list){
             <td>${row["创建者"]}</td>
             <td>${row["数据状态"]}</td>
             <td>
-                <button class="btn btn-sm btn-info" onclick='showDetail(${JSON.stringify(row).replace(/'/g, "\\'").replace(/"/g, "'")})'>详情</button>
+                <button class="btn btn-sm btn-info" onclick="showDetail(${rowStr})">详情</button>
                 <button class="btn btn-sm btn-success" onclick="copyNumber('${row["编号"]}')">复制编号</button>
             </td>
         `;
