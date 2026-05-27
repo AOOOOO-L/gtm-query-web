@@ -1,81 +1,162 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商用外销GTM资料查询</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-</head>
-<body class="container mt-4">
-    <h2 class="text-center mb-4">商用外销GTM资料查询</h2>
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">产品大类</label>
-                    <select id="categorySelect" class="form-select">
-                        <option value="">加载中...</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">产品系列</label>
-                    <select id="seriesSelect" class="form-select">
-                        <option value="">请点击刷新加载数据</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">GTM资料类型</label>
-                    <select id="gtmSelect" class="form-select">
-                        <option value="all">全部</option>
-                    </select>
-                </div>
-                <div class="col-md-3 align-self-end">
-                    <button id="refreshBtn" class="btn btn-primary w-100">🔄 刷新最新数据</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="dataTable" class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>GTM资料</th>
-                            <th>是否上传</th>
-                            <th>资料名称</th>
-                            <th>资料编号</th>
-                            <th>当前版本</th>
-                            <th>创建者</th>
-                            <th>数据状态</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="8" class="text-center text-muted">请点击「刷新最新数据」加载数据</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="detailModalLabel">资料详情</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="detailContent"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+const EXCEL_URL = "GTM 资料.xlsx";
+let excelData = [];
+const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+// 初始化
+document.addEventListener('DOMContentLoaded', function(){
+    // 绑定事件
+    document.getElementById("refreshBtn").onclick = refreshData;
+    document.getElementById("categorySelect").onchange = function(){
+        loadSeries();
+        filterData();
+    };
+    document.getElementById("seriesSelect").onchange = filterData;
+    document.getElementById("gtmSelect").onchange = filterData;
+
+    // 首次加载
+    refreshData();
+});
+
+async function refreshData(){
+    setLoadingState();
+    try{
+        let res = await fetch(EXCEL_URL);
+        if(!res.ok) throw "文件读取失败";
+        let buf = await res.arrayBuffer();
+        let wb = XLSX.read(buf, {type:"array"});
+        excelData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:"未填写"});
+
+        loadCategories();
+        loadGtmTypes();
+        filterData();
+    }catch(e){
+        resetTable("加载失败");
+    }
+}
+
+function loadCategories(){
+    let arr = [...new Set(excelData.map(x=>x["产品大类"]))].filter(x=>x&&x!="未填写").sort();
+    let sel = document.getElementById("categorySelect");
+    sel.innerHTML = "";
+    if(arr.length===0){
+        sel.innerHTML = "<option>无数据</option>";
+        return;
+    }
+    arr.forEach(item=>{
+        let op = document.createElement("option");
+        op.value = item;
+        op.innerText = item;
+        sel.appendChild(op);
+    });
+    loadSeries();
+}
+
+function loadSeries(){
+    let cat = document.getElementById("categorySelect").value;
+    let arr = [...new Set(excelData.filter(x=>x["产品大类"]===cat).map(x=>x["系列名称"]))].filter(x=>x&&x!="未填写").sort();
+    let sel = document.getElementById("seriesSelect");
+    sel.innerHTML = "";
+    if(arr.length===0){
+        sel.innerHTML = "<option>无数据</option>";
+        filterData();
+        return;
+    }
+    arr.forEach(item=>{
+        let op = document.createElement("option");
+        op.value = item;
+        op.innerText = item;
+        sel.appendChild(op);
+    });
+    filterData();
+}
+
+function loadGtmTypes(){
+    let arr = [...new Set(excelData.map(x=>x["GTM资料"]))].filter(x=>x&&x!="未填写").sort();
+    let sel = document.getElementById("gtmSelect");
+    sel.innerHTML = '<option value="all">全部</option>';
+    arr.forEach(item=>{
+        let op = document.createElement("option");
+        op.value = item;
+        op.innerText = item;
+        sel.appendChild(op);
+    });
+}
+
+function filterData(){
+    let cat = document.getElementById("categorySelect").value;
+    let ser = document.getElementById("seriesSelect").value;
+    let gtm = document.getElementById("gtmSelect").value;
+
+    let list = excelData.filter(x=>x["产品大类"]===cat && x["系列名称"]===ser);
+    if(gtm !== "all"){
+        list = list.filter(x=>x["GTM资料"] === gtm);
+    }
+    renderTable(list);
+}
+
+// 接收当前筛选后的列表，保证详情一一对应
+function renderTable(list){
+    let tb = document.querySelector("#dataTable tbody");
+    tb.innerHTML = "";
+    if(list.length===0){
+        tb.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无匹配数据</td></tr>';
+        return;
+    }
+    list.forEach((row, idx)=>{
+        let tr = document.createElement("tr");
+        // 把当前行数据传给详情弹窗，不再用全局索引
+        tr.innerHTML = `
+            <td>${row["GTM资料"]}</td>
+            <td>${row["是否上传"]}</td>
+            <td>${row["名称"]}</td>
+            <td>${row["编号"]}</td>
+            <td>${row["创建者"]}</td>
+            <td>${row["数据状态"]}</td>
+            <td>
+                <button class="btn btn-sm btn-info" onclick="showDetail(${JSON.stringify(row).replace(/"/g,'&quot;')})">详情</button>
+                <button class="btn btn-sm btn-success" onclick="copyNumber('${row["编号"]}')">复制编号</button>
+            </td>
+        `;
+        tb.appendChild(tr);
+    });
+}
+
+// 直接使用当前行数据，彻底解决错位
+function showDetail(rowData){
+    let html = `
+    <h6>${rowData["系列名称"]} 详情</h6><hr>
+    <p>产品大类：${rowData["产品大类"]}</p>
+    <p>GTM资料：${rowData["GTM资料"]}</p>
+    <p>编号：${rowData["编号"]}</p>
+    <p>名称：${rowData["名称"]}</p>
+    <p>创建者：${rowData["创建者"]}</p>
+    <p>路径：${rowData["路径"]}</p>
+    `;
+    document.getElementById("detailContent").innerHTML = html;
+    detailModal.show();
+}
+
+// 保留复制编号功能
+function copyNumber(num){
+    if(num === "未填写"){
+        alert("无编号");
+        return;
+    }
+    navigator.clipboard.writeText(num).then(()=>{
+        alert("已复制："+num);
+    }).catch(()=>{
+        prompt("手动复制", num);
+    });
+}
+
+function setLoadingState(){
+    document.getElementById("categorySelect").innerHTML = "<option>加载中</option>";
+    document.getElementById("seriesSelect").innerHTML = "<option>加载中</option>";
+    document.getElementById("gtmSelect").innerHTML = '<option value="all">加载中</option>';
+    resetTable("加载中...");
+}
+
+function resetTable(txt){
+    let tb = document.querySelector("#dataTable tbody");
+    tb.innerHTML = `<tr><td colspan="7" class="text-center text-muted">${txt}</td></tr>`;
+}
