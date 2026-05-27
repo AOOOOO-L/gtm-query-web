@@ -4,15 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>商用外销GTM资料查询</title>
-    <!-- 引入Bootstrap美化界面 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- 引入SheetJS解析Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="container mt-4">
     <h2 class="text-center mb-4">商用外销GTM资料查询</h2>
-
-    <!-- 筛选区域 -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="row g-3">
@@ -40,8 +36,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 数据表格区域 -->
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -52,6 +46,7 @@
                             <th>是否上传</th>
                             <th>资料名称</th>
                             <th>资料编号</th>
+                            <th>当前版本</th>
                             <th>创建者</th>
                             <th>数据状态</th>
                             <th>操作</th>
@@ -59,15 +54,13 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="7" class="text-center text-muted">请点击「刷新最新数据」加载数据</td>
+                            <td colspan="8" class="text-center text-muted">请点击「刷新最新数据」加载数据</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
-    <!-- 详情弹窗 -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -82,7 +75,6 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
 </body>
